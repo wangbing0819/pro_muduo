@@ -30,11 +30,11 @@ public:
     const std::string name() const { return name_; }
 private:
 
-    EventLoop *baseLoop_; // EventLoop loop;  
-    std::string name_;
-    bool started_;
-    int numThreads_;
-    int next_;
+    EventLoop                   *baseLoop_; // EventLoop loop;  
+    std::string                 name_;
+    bool                        started_;
+    int                         numThreads_;
+    int                         next_;
     std::vector<std::unique_ptr<EventLoopThread>> threads_;
     std::vector<EventLoop*> loops_;
 };

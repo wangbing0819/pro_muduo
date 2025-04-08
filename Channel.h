@@ -61,17 +61,17 @@ private:
     void update();
     void handleEventWithGuard(Timestamp receiveTime);
 
-    static const int kNoneEvent;
-    static const int kReadEvent;
-    static const int kWriteEvent;
+    static const int kNoneEvent;    /** 0 */
+    static const int kReadEvent;    /** EPOLLIN | EPOLLPRI */
+    static const int kWriteEvent;   /** EPOLLOUT */
 
-    EventLoop *loop_; // 事件循环
-    const int fd_;    // fd, Poller监听的对象
-    int events_; // 注册fd感兴趣的事件
-    int revents_; // poller返回的具体发生的事件
+    EventLoop *loop_;               // 事件循环
+    const int fd_;                  // fd, Poller监听的对象
+    int events_;                    // 注册fd感兴趣的事件
+    int revents_;                   // poller返回的具体发生的事件
     int index_;
 
-    std::weak_ptr<void> tie_;
+    std::weak_ptr<void> tie_;       // 这个tie_ 绑定了  TcpConnection
     bool tied_;
 
     // 因为channel通道里面能够获知fd最终发生的具体的事件revents，所以它负责调用具体事件的回调操作

@@ -18,6 +18,8 @@ void EventLoopThreadPool::start(const ThreadInitCallback &cb)
 {
     started_ = true;
 
+    threads_.reserve(numThreads_);
+    loops_.reserve(numThreads_);
     for (int i = 0; i < numThreads_; ++i)
     {
         char buf[name_.size() + 32];

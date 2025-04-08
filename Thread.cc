@@ -19,15 +19,19 @@ Thread::~Thread()
 {
     if (started_ && !joined_)
     {
-        thread_->detach(); // thread类提供的设置分离线程的方法
+        thread_->detach();   // thread类提供的设置分离线程的方法
     }
 }
 
-void Thread::start()  // 一个Thread对象，记录的就是一个新线程的详细信息
+/**
+ * 值得学习：Thread的时候不是直接使用thread定义，而是使用智能指针。
+ * 这样就可以在需要的运行的时候才开始运行。
+*/
+void Thread::start()        // 一个Thread对象，记录的就是一个新线程的详细信息
 {
     started_ = true;
     sem_t sem;
-    sem_init(&sem, false, 0);
+    sem_init(&sem, 0, 0);
 
     // 开启线程
     thread_ = std::shared_ptr<std::thread>(new std::thread([&](){

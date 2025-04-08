@@ -193,6 +193,11 @@ void TcpConnection::connectDestroyed()
     channel_->remove(); // 把channel从poller中删除掉
 }
 
+/**
+ * handleRead函数主要是用于当已经建立的连接，
+ * 对方发送数据给你了此时这个文件描述符的读事件就绪调用的回调方法就是这个。
+ * 将用户发过来的数据拷贝到接收缓冲区当中然后再调用用户自定义的消息到来时的回调函数
+*/
 void TcpConnection::handleRead(Timestamp receiveTime)
 {
     int savedErrno = 0;
@@ -214,6 +219,13 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     }
 }
 
+// handleWrite:负责处理Tcp连接的可写事件
+
+// TCP缓冲区能不能容纳得了这么多的数据了。如果此时TCP缓冲区不能容纳得了这么多数据那么处理？
+// 首先他会将这些数据保存到用户层定义的发送缓冲区当中并且向事件监听器注册写事件
+// 当事件监听器检测到写事件就绪就会调用TcpConnection对象当中的handlwrite将剩余的数据写入到TCP的发送缓冲区当中
+// 当我们调用handlwrite时如果还是不能完全写入到TCP的发送缓冲区当中，此时尽可能的将数据写入到发送缓冲区当中依然保持事件
+// 如果此时我们一次性将数据写入到缓冲区当中，此时需要将写事件从事件监听器当中删除这样做的目的是为了不让epoll_wait一直通知我们写事件就绪，在这里是毫无意义的。
 void TcpConnection::handleWrite()
 {
     if (channel_->isWriting())

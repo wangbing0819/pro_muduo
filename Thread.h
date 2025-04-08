@@ -17,7 +17,7 @@ public:
     explicit Thread(ThreadFunc, const std::string &name = std::string());
     ~Thread();
 
-    void start();
+    void start();                       
     void join();
 
     bool started() const { return started_; }
@@ -28,11 +28,13 @@ public:
 private:
     void setDefaultName();
 
-    bool started_;
-    bool joined_;
-    std::shared_ptr<std::thread> thread_;
-    pid_t tid_;
-    ThreadFunc func_;
-    std::string name_;
-    static std::atomic_int numCreated_;
+    bool                                    started_;
+    bool                                    joined_;
+    std::shared_ptr<std::thread>            thread_;
+    pid_t                                   tid_;
+    std::string                             name_;
+    
+    ThreadFunc                              func_;  
+    
+    static std::atomic_int                  numCreated_;
 };

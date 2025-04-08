@@ -62,7 +62,18 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
     return now;
 }
 
-// channel update remove => EventLoop updateChannel removeChannel => Poller updateChannel removeChannel
+// 填写活跃的连接
+void EPollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const
+{
+    for (int i=0; i < numEvents; ++i)
+    {
+        Channel *channel = static_cast<Channel*>(events_[i].data.ptr);
+        channel->set_revents(events_[i].events);
+        activeChannels->push_back(channel); // EventLoop就拿到了它的poller给它返回的所有发生事件的channel列表了
+    }
+}
+
+// channel update/remove => EventLoop updateChannel/removeChannel => Poller updateChannel/emoveChannel
 /**
  *            EventLoop  =>   poller.poll
  *     ChannelList      Poller
@@ -71,14 +82,14 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 void EPollPoller::updateChannel(Channel *channel)
 {
     const int index = channel->index();
-    LOG_INFO("func=%s => fd=%d events=%d index=%d \n", __FUNCTION__, channel->fd(), channel->events(), index);
+    LOG_INFO("func[%s] => fd[%d] events[%d] index[%d] \n", __FUNCTION__, channel->fd(), channel->events(), index);
 
     if (index == kNew || index == kDeleted)
     {
         if (index == kNew)
         {
             int fd = channel->fd();
-            channels_[fd] = channel;
+            channels_.insert(std::make_pair(fd, channel));
         }
 
         channel->set_index(kAdded);
@@ -113,17 +124,6 @@ void EPollPoller::removeChannel(Channel *channel)
         update(EPOLL_CTL_DEL, channel);
     }
     channel->set_index(kNew);
-}
-
-// 填写活跃的连接
-void EPollPoller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const
-{
-    for (int i=0; i < numEvents; ++i)
-    {
-        Channel *channel = static_cast<Channel*>(events_[i].data.ptr);
-        channel->set_revents(events_[i].events);
-        activeChannels->push_back(channel); // EventLoop就拿到了它的poller给它返回的所有发生事件的channel列表了
-    }
 }
 
 // 更新channel通道 epoll_ctl add/mod/del

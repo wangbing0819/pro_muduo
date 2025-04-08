@@ -31,10 +31,9 @@ EventLoop* EventLoopThread::startLoop()
     EventLoop *loop = nullptr;
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        while ( loop_ == nullptr )
-        {
-            cond_.wait(lock);
-        }
+        cond_.wait(lock, [&]()->bool{
+            return loop_ != nullptr;
+        });
         loop = loop_;
     }
     return loop;
@@ -57,6 +56,6 @@ void EventLoopThread::threadFunc()
     }
 
     loop.loop(); // EventLoop loop  => Poller.poll
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_); // //为什么这里要加锁，大概是悲观锁的思想吧，这个loop_毕竟会被多个程序使用
     loop_ = nullptr;
 }

@@ -16,17 +16,17 @@ public:
     using ThreadInitCallback = std::function<void(EventLoop*)>; 
 
     EventLoopThread(const ThreadInitCallback &cb = ThreadInitCallback(), 
-        const std::string &name = std::string());
+                    const std::string &name = std::string());
     ~EventLoopThread();
 
     EventLoop* startLoop();
 private:
     void threadFunc();
 
-    EventLoop *loop_;
-    bool exiting_;
-    Thread thread_;
-    std::mutex mutex_;
-    std::condition_variable cond_;
-    ThreadInitCallback callback_;
+    EventLoop                       *loop_;         // mainLoop用户传进来的
+    bool                            exiting_;
+    Thread                          thread_;
+    std::mutex                      mutex_;
+    std::condition_variable         cond_;
+    ThreadInitCallback              callback_;
 };

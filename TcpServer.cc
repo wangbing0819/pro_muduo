@@ -64,7 +64,7 @@ void TcpServer::start()
     }
 }
 
-// 有一个新的客户端的连接，acceptor会执行这个回调操作
+// 有一个新的客户端的连接，acceptor会执行这个回调操作 sockfd(connfd)
 void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
 {
     // 轮询算法，选择一个subLoop，来管理channel
@@ -87,7 +87,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr)
     }
     InetAddress localAddr(local);
 
-    // 根据连接成功的sockfd，创建TcpConnection连接对象
+    // 根据连接成功的sockfd，创建TcpConnection连接对象, 并设置用户设置的回调函数
     TcpConnectionPtr conn(new TcpConnection(
                             ioLoop,
                             connName,

@@ -32,8 +32,10 @@ private:
     // 更新channel通道
     void update(int operation, Channel *channel);
 
-    using EventList = std::vector<epoll_event>;
+private:
 
-    int epollfd_;
-    EventList events_;
+    int         epollfd_;      // 红黑树的树根
+    
+    using EventList = std::vector<epoll_event>;
+    EventList  events_;       // 监听事件集合
 };

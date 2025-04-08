@@ -72,25 +72,31 @@ private:
     void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
 
-    EventLoop *loop_; // 这里绝对不是baseLoop， 因为TcpConnection都是在subLoop里面管理的
-    const std::string name_;
-    std::atomic_int state_;
+    EventLoop *loop_;           // 这里绝对不是baseLoop，因为TcpConnection都是在subLoop里面管理的
+    const std::string name_;    // 保存已连接套接字文件描述符
+    std::atomic_int state_;     // 封装已经建立连接的文件描述符以及各种事件发生时对应的回调函数
     bool reading_;
 
     // 这里和Acceptor类似   Acceptor=》mainLoop    TcpConenction=》subLoop
-    std::unique_ptr<Socket> socket_;
+    std::unique_ptr<Socket> socket_;                   
     std::unique_ptr<Channel> channel_;
 
-    const InetAddress localAddr_;
-    const InetAddress peerAddr_;
+    const InetAddress localAddr_;                     //当前主机的ip和端口号
+    const InetAddress peerAddr_;                      //远端地址
 
-    ConnectionCallback connectionCallback_; // 有新连接时的回调
-    MessageCallback messageCallback_; // 有读写消息时的回调
-    WriteCompleteCallback writeCompleteCallback_; // 消息发送完成以后的回调
+    // 这些回调函数都是用户自己定义的
+    ConnectionCallback connectionCallback_;          // 有新连接时的回调
+    MessageCallback messageCallback_;                // 有读写消息时的回调
+    WriteCompleteCallback writeCompleteCallback_;    // 消息发送完成以后的回调
     HighWaterMarkCallback highWaterMarkCallback_;
     CloseCallback closeCallback_;
     size_t highWaterMark_;
 
-    Buffer inputBuffer_;  // 接收数据的缓冲区
-    Buffer outputBuffer_; // 发送数据的缓冲区
+    Buffer inputBuffer_;  // 接收数据的缓冲区 => 接收用户发过来的数据
+    Buffer outputBuffer_; // 发送数据的缓冲区 => 用来保存暂时发生不出去的数据
+    /*
+    TCP的发送缓冲区也是有大小限制的，如果此时无法将数据一次性拷贝到TCP缓冲区当中，
+    那么剩余的数据可以暂时保存在我们自己定义的缓冲区当中并将给文件描述对应的写事件注册到对应的Poller当中，
+    等到写事件就绪了，在调用回调方法将剩余的数据发送给客户端。
+    */
 };
